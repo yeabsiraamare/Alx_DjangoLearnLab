@@ -3,8 +3,11 @@ from django.views.generic.detail import DetailView
 from .models import Library
 from .models import Book
 from django.shortcuts import redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
+from django.contrib.auth.forms import UserCreationForm 
+from django.contrib.auth import login
+
 
 
 
@@ -35,15 +38,19 @@ def logout_view(request):
     return render(request, 'relationship_app/logout.html')
 
 
-def register_view(request):
+
+
+
+def register(request):
     form = UserCreationForm()
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('list_books')
+            return redirect('login')
     return render(request, 'relationship_app/register.html', {'form': form})
+
 
 
 
