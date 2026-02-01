@@ -1,76 +1,89 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.models import Group
 
-# Author model
+
+# -----------------------------
+# Custom User Manager
+# -----------------------------
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        if not username:
+            raise ValueError("Users must have a username")
+
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
+
+        return self.create_user(username, email, password, **extra_fields)
+
+
+# -----------------------------
+# Custom User Model
+# -----------------------------
+class CustomUser(AbstractUser):
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.username
+
+
+# -----------------------------
+# Other Models
+# -----------------------------
 class Author(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
-# Book model with permissions
+
+class Library(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     publication_year = models.IntegerField()
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+
+    library = models.ForeignKey(
+        Library,
+        related_name='library_books',
+        on_delete=models.CASCADE
+    )
 
     class Meta:
-        permissions = (
+        permissions = [
             ("can_add_book", "Can add book"),
             ("can_change_book", "Can change book"),
             ("can_delete_book", "Can delete book"),
-            ("can_view", "Can view book"),
-            ("can_create", "Can create book"),
-            ("can_edit", "Can edit book"),
-        )
+        ]
 
     def __str__(self):
         return self.title
 
-# Library model
-class Library(models.Model):
-    name = models.CharField(max_length=200)
-    books = models.ManyToManyField(Book)
 
-    def __str__(self):
-        return self.name
-
-# Librarian model
 class Librarian(models.Model):
     name = models.CharField(max_length=100)
-    library = models.OneToOneField(Library, on_delete=models.CASCADE)
+    library = models.OneToOneField(Library, on_delete=models.CASCADE, related_name='librarian')
 
     def __str__(self):
         return self.name
-
-# UserProfile for roles
-class UserProfile(models.Model):
-    user = models.OneToOneField(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    related_name='relationship_profile'
-    )
-
-    def __str__(self):
-        return self.user.username
-
-# Signal: create profile + assign group
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        profile = UserProfile.objects.create(user=instance)
-        role_group_map = {
-            'Admin': 'Admins',
-            'Librarian': 'Editors',
-            'Member': 'Viewers'
-        }
-        group_name = role_group_map.get(profile.role)
-        if group_name:
-            try:
-                group = Group.objects.get(name=group_name)
-                instance.groups.add(group)
-            except Group.DoesNotExist:
-                pass  
