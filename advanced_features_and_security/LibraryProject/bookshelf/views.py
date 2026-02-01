@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import permission_required
 from .models import Book
 from django import forms
+from .forms import ExampleForm
+
 
 
 class SearchForm(forms.Form):
@@ -38,3 +40,7 @@ def edit_book(request):
 @permission_required('bookshelf.can_delete', raise_exception=True)
 def delete_book(request):
     return render(request, 'bookshelf/delete_book.html')
+
+def example_form_view(request):
+    form = ExampleForm()
+    return render(request, 'bookshelf/form_example.html', {'form': form})
