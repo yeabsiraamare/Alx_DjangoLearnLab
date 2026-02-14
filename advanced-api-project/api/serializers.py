@@ -3,6 +3,7 @@ from .models import Author, Book
 from datetime import datetime
 
 
+
 # BookSerializer is responsible for converting Book model instances
 # to and from primitive data types (e.g., JSON).
 # It includes all fields of the Book model.
