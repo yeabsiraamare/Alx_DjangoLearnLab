@@ -23,3 +23,16 @@ Permissions:
 - Anyone can view posts.
 - Only logged-in users can create posts.
 - Only the author can edit or delete their own posts.
+
+
+## Comment System
+
+- Users can view comments on each post on the post detail page.
+- Authenticated users can:
+  - Add comments at `/posts/<post_id>/comments/new/`
+  - Edit their own comments at `/comments/<id>/edit/`
+  - Delete their own comments at `/comments/<id>/delete/`
+
+Permissions:
+- Only the comment author can edit or delete their comment.
+- All visitors can read comments.
