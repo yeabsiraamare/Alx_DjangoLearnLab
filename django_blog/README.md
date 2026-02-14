@@ -36,3 +36,13 @@ Permissions:
 Permissions:
 - Only the comment author can edit or delete their comment.
 - All visitors can read comments.
+
+
+## Tagging and Search
+
+- Posts can have multiple tags (comma-separated when creating/editing).
+- Tags are shown on the post detail page; clicking a tag shows all posts with that tag.
+- Search bar (top of page) lets users search by title, content, or tag name.
+- URLs:
+  - `/tags/<tag_name>/` — posts with a given tag
+  - `/search/?q=keyword` — search results

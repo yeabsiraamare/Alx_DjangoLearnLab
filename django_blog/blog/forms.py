@@ -1,10 +1,15 @@
 from django import forms
-from .models import Post, Comment
+from .models import Post, Comment, Tag
 
 class PostForm(forms.ModelForm):
+    tags = forms.CharField(
+        required=False,
+        help_text="Enter tags separated by commas"
+    )
+
     class Meta:
         model = Post
-        fields = ["title", "content"]
+        fields = ["title", "content", "tags"]
 
 
 class CommentForm(forms.ModelForm):
