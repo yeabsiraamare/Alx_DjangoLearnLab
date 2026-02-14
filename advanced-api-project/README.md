@@ -41,3 +41,25 @@ This section implements CRUD operations for the Book model using Django REST Fra
 ## Custom Behavior
 - Validation handled in serializers.
 - `perform_create` and `perform_update` allow further customization.
+
+
+## Filtering, Searching, and Ordering
+
+### Filtering
+You can filter books by:
+- title
+- author (ID)
+- publication_year
+
+Example:
+GET /api/books/?title=Things Fall Apart
+
+### Searching
+Search across title and author name:
+GET /api/books/?search=achebe
+
+### Ordering
+Order results by title or publication_year:
+GET /api/books/?ordering=title
+GET /api/books/?ordering=-publication_year
+
