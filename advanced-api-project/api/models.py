@@ -1,28 +1,33 @@
 from django.db import models
 
+# Author model represents a writer who can have multiple books.
+# This is the "one" side of a one-to-many relationship with Book.
 class Author(models.Model):
-    """
-    Author model represents a book author.
-    One author can have many books.
-    """
+    # Stores the full name of the author.
     name = models.CharField(max_length=255)
 
     def __str__(self):
+        # Helpful string representation for admin and shell.
         return self.name
 
 
+# Book model represents a single book written by an Author.
+# Each book is linked to exactly one Author via a foreign key.
 class Book(models.Model):
-    """
-    Book model represents a single book.
-    Each book is linked to one Author via a ForeignKey.
-    """
+    # Title of the book.
     title = models.CharField(max_length=255)
+
+    # Year the book was published.
     publication_year = models.IntegerField()
+
+    # Foreign key to Author creates a one-to-many relationship:
+    # one Author can have many Books.
     author = models.ForeignKey(
         Author,
-        on_delete=models.CASCADE,
-        related_name='books'  # used for nested serialization
+        related_name='books',  # used for reverse lookup in serializers
+        on_delete=models.CASCADE
     )
 
     def __str__(self):
+        # Helpful string representation for admin and shell.
         return f"{self.title} ({self.publication_year})"
