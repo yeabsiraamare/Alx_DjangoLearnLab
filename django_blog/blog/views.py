@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.db.models import Q
-from .models import Post, Comment, Tag
+from .models import Post, Comment
 from .forms import PostForm, CommentForm
 from django.contrib.auth.decorators import login_required 
 from django.utils.decorators import method_decorator
@@ -35,7 +35,7 @@ class PostDetailView(DetailView):
         return context
 
 
-cclass PostCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "blog/post_form.html"
@@ -158,17 +158,16 @@ class SearchResultsView(ListView):
             Q(tags__name__icontains=query)
         ).distinct()
 
-
 class TagPostListView(ListView):
     model = Post
     template_name = "blog/tag_post_list.html"
     context_object_name = "posts"
 
     def get_queryset(self):
-        tag_name = self.kwargs["tag_name"]
-        return Post.objects.filter(tags__name=tag_name).distinct()
-
+        return Post.objects.filter(tags__name=self.kwargs["tag_name"])
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tag_name"] = self.kwargs["tag_name"]
         return context
+
