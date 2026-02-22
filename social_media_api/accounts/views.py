@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import RegisterSerializer, UserSerializer
+from django.contrib.auth import get_user_model
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -43,3 +44,26 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+class FollowUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        try:
+            target_user = User.objects.get(id=user_id)
+            request.user.following.add(target_user)
+            return Response({"message": f"You are now following {target_user.username}"})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+
+class UnfollowUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        try:
+            target_user = User.objects.get(id=user_id)
+            request.user.following.remove(target_user)
+            return Response({"message": f"You unfollowed {target_user.username}"})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
