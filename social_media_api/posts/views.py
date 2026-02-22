@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, generics
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.views import APIView 
@@ -34,8 +34,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class FeedView(APIView):
-    permission_classes = [IsAuthenticated]
+class FeedView(generics.GenericAPIView):
+    queryset = Post.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         following_users = request.user.following.all()

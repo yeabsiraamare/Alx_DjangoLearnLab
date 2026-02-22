@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import RegisterSerializer, UserSerializer
 from django.contrib.auth import get_user_model
+from rest_framework import generics, permissions
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -45,25 +46,30 @@ class ProfileView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
-class FollowUserView(APIView):
-    permission_classes = [IsAuthenticated]
+
+CustomUser = get_user_model()
+
+class FollowUserView(generics.GenericAPIView):
+    queryset = CustomUser.objects.all()   # <-- explicit
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
         try:
-            target_user = User.objects.get(id=user_id)
+            target_user = CustomUser.objects.get(id=user_id)
             request.user.following.add(target_user)
             return Response({"message": f"You are now following {target_user.username}"})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 
-class UnfollowUserView(APIView):
-    permission_classes = [IsAuthenticated]
+class UnfollowUserView(generics.GenericAPIView):
+    queryset = CustomUser.objects.all()   # <-- explicit
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
         try:
-            target_user = User.objects.get(id=user_id)
+            target_user = CustomUser.objects.get(id=user_id)
             request.user.following.remove(target_user)
             return Response({"message": f"You unfollowed {target_user.username}"})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
