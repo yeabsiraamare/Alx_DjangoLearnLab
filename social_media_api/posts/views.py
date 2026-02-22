@@ -3,6 +3,9 @@ from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission: only allow authors to edit/delete their own posts or comments.
+    """
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
