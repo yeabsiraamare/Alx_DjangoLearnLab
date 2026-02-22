@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions, filters, generics
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response 
 from rest_framework.permissions import IsAuthenticated
+from notifications.models import Notification
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
     Custom permission: only allow authors to edit/delete their own posts or comments.
@@ -43,3 +44,37 @@ class FeedView(generics.GenericAPIView):
         posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
+
+class LikePostView(generics.GenericAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if created:
+            # create notification
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb="liked your post",
+                target=post
+            )
+            return Response({"message": "Post liked"})
+        return Response({"message": "Already liked"})
+
+
+class UnlikePostView(generics.GenericAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        try:
+            like = Like.objects.get(post=post, user=request.user)
+            like.delete()
+            return Response({"message": "Post unliked"})
+        except Like.DoesNotExist:
+            return Response({"error": "You haven't liked this post"}, status=400)

@@ -4,3 +4,10 @@
 
 ## Feed
 - `GET /api/feed/` → Get posts from followed users (ordered by newest first)
+
+## Likes
+- `POST /api/posts/<id>/like/` → Like a post
+- `POST /api/posts/<id>/unlike/` → Unlike a post
+
+## Notifications
+- `GET /api/notifications/` → View notifications (latest first)
